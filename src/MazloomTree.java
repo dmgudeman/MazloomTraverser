@@ -31,4 +31,17 @@ public class MazloomTree<E>
    {
       return null;
    }
+   
+   public void display()
+   {display(mRoot, 0);}
+   
+   public void display(MazloomNode<E> treeNode, int level)
+   {
+      if (treeNode == null)
+         return;
+      System.out.println(treeNode.data);
+      display(treeNode.firstChild, level +1);
+      if ( level > 0 )
+         display( treeNode.sib, level);
+   }
 }
