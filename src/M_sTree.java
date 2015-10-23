@@ -9,7 +9,10 @@ public class M_sTree<E extends Comparable<? super E>> implements Cloneable
    {
       clear();
    }
-
+   boolean contains(E x)  
+   { 
+       return find(mRoot, x) != null; 
+   }
    public boolean empty()
    {
       return (mSize == 0);
@@ -25,7 +28,30 @@ public class M_sTree<E extends Comparable<? super E>> implements Cloneable
    {
       return mSize;
    }
+   // public version available to client
+   E find( E x )
+   {
+      M_sNode<E> resultNode;
+      resultNode = find(mRoot, x);
+      if (resultNode == null)
+         throw new NoSuchElementException();
+      return resultNode.data;
+   }
+// private version that does most of the work
+   protected M_sNode<E> find( M_sNode<E> root, E x )
+   {
+      int compareResult;  // avoid multiple calls to compareTo()
 
+      if (root == null)
+         return null;
+
+      compareResult = x.compareTo(root.data); 
+      if (compareResult < 0)
+         return find(root.lftChild, x);
+      if (compareResult > 0)
+         return find(root.rtChild, x);
+      return root;   // found!
+   }
    protected M_sNode<E> findMin(M_sNode<E> root)
    {
       if (root == null)
@@ -104,4 +130,56 @@ public class M_sTree<E extends Comparable<? super E>> implements Cloneable
       }
       return root;
    }
+   public Object clone() throws CloneNotSupportedException
+   {
+      M_sTree<E> newObject = (M_sTree<E>)super.clone();
+      newObject.clear();  // can't point to other's data
+
+      newObject.mRoot = cloneSubtree(mRoot);
+      newObject.mSize = mSize;
+      
+      return newObject;
+   }
+   protected M_sNode<E> cloneSubtree(M_sNode<E> root)
+   {
+      M_sNode<E> newNode;
+      if (root == null)
+         return null;
+
+      // does not set myRoot which must be done by caller
+      newNode = new M_sNode<E>
+      (
+         root.data, 
+         cloneSubtree(root.lftChild), 
+         cloneSubtree(root.rtChild)
+      );
+      return newNode;
+   }
+   
+   protected int findHeight( M_sNode<E> treeNode, int height ) 
+   {
+      int leftHeight, rightHeight;
+      if (treeNode == null)
+         return height;
+      height++;
+      leftHeight = findHeight(treeNode.lftChild, height);
+      rightHeight = findHeight(treeNode.rtChild, height);
+      return (leftHeight > rightHeight)? leftHeight : rightHeight;
+   }
+   public < F extends Traverser<? super E > > 
+   void traverse(F func)
+   {
+      traverse(func, mRoot);
+   }
+   protected <F extends Traverser<? super E>> 
+   void traverse(F func, M_sNode<E> treeNode)
+   {
+      if (treeNode == null)
+         return;
+
+      traverse(func, treeNode.lftChild);
+      func.visit(treeNode.data);
+      traverse(func, treeNode.rtChild);
+   }
+   
 }
